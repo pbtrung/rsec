@@ -30,6 +30,7 @@ fn main() {
 	let mut main_opts = Options::new();
     let main_args: Vec<String> = env::args().collect();
     let program = main_args[0].clone();
+    main_opts.optflag("n", "new", "create a new database");
     main_opts.optopt("p", "pwd", "path to password file (REQUIRED)", "PATH");
     main_opts.optopt("u", "url", "remote path (URL) to database", "URL");
     main_opts.optopt("l", "local", "local path to database", "PATH");
@@ -52,6 +53,7 @@ fn main() {
     }
 
     let mut enc_buf: Vec<u8> = vec![];
+    let mut pwd_buf: Vec<u8> = vec![];
     if !main_matches.opt_present("p") {
         print_usage_msg("Password file is required.", &program, &main_opts);
         std::process::exit(-1);
@@ -59,42 +61,46 @@ fn main() {
         print_usage_msg("Either URL or local path is needed.", &program, &main_opts);
         std::process::exit(-1);
     } else {
-        if main_matches.opt_present("u") {
-            let url = match Url::parse(&main_matches.opt_str("u").unwrap()) {
-                Err(e) => panic!(e.to_string()),
-                Ok(url) => { url },
-            };
-            if url.scheme() != "https" {
-                println!("Only https is allowed for remote URL.");
-                std::process::exit(-1);
-            }
-            let username = rpassword::read_password_from_tty(Some("Username: ")).unwrap();
-            let password = rpassword::read_password_from_tty(Some("Password: ")).unwrap();
+    	if !main_matches.opt_present("n") {
+	        if main_matches.opt_present("u") {
+	            let url = match Url::parse(&main_matches.opt_str("u").unwrap()) {
+	                Err(e) => panic!(e.to_string()),
+	                Ok(url) => { url },
+	            };
+	            if url.scheme() != "https" {
+	                println!("Only https is allowed for remote URL.");
+	                std::process::exit(-1);
+	            }
+	            let username = rpassword::read_password_from_tty(Some("Username: ")).unwrap();
+	            let password = rpassword::read_password_from_tty(Some("Password: ")).unwrap();
 
-            let client = reqwest::Client::new();
-            let mut resp = client.get(url.as_str())
-                .basic_auth(username, Some(password))
-                .send().unwrap();
-            if !resp.status().is_success() {
-                println!("Error(s) happened. Status: {:?}", resp.status());
-                println!("Recheck URL, username, and password");
-                std::process::exit(-1);
-            }
-            resp.copy_to(&mut enc_buf).unwrap();
-        }
+	            let client = reqwest::Client::new();
+	            let mut resp = client.get(url.as_str())
+	                .basic_auth(username, Some(password))
+	                .send().unwrap();
+	            if !resp.status().is_success() {
+	                println!("Error(s) happened. Status: {:?}", resp.status());
+	                println!("Recheck URL, username, and password");
+	                std::process::exit(-1);
+	            }
+	            resp.copy_to(&mut enc_buf).unwrap();
+	        }
 
-        if main_matches.opt_present("l") {
-            let local_path = main_matches.opt_str("l").unwrap();
-            let mut enc_file = File::open(local_path).unwrap();
-            let mut header = [0; 4];
-            enc_file.read(&mut header).unwrap();
-            if header != [0x00, 0x00, 0x00, 0x01] {
-                println!("Header does not match.\nRecheck local path for correct file.");
-                std::process::exit(-1);
-            }
-            enc_file.seek(SeekFrom::Current(-(header.len() as i64))).unwrap();
-            enc_file.read_to_end(&mut enc_buf).unwrap();
-        }
+	        if main_matches.opt_present("l") {
+	            let local_path = main_matches.opt_str("l").unwrap();
+	            let mut enc_file = File::open(local_path).unwrap();
+	            let mut header = [0; 4];
+	            enc_file.read(&mut header).unwrap();
+	            if header != [0x00, 0x00, 0x00, 0x01] {
+	                println!("Header does not match.\nRecheck local path for correct file.");
+	                std::process::exit(-1);
+	            }
+	            enc_file.seek(SeekFrom::Current(-(header.len() as i64))).unwrap();
+	            enc_file.read_to_end(&mut enc_buf).unwrap();
+	        }
+    	} else {
+    		
+    	}
     }
 
     println!("\nPress ? to get help.");
