@@ -6,9 +6,9 @@ authors = ["Trung Pham <pham.bao.trung@gmail.com>"]
 [dependencies]
 rusqlite = { version = "0.16.0", features = ["bundled"] }
 sodiumoxide = "0.2.0"
-lz4 = "1.23.1"
+snap = "0.2"
 structopt = "0.2"
-argonautica = "0.1.5"
+rust-argon2 = "0.4.0"
 rpassword = "2.1.0"
 reqwest = "0.9.9"
 url = "1.7.2"
