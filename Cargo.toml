@@ -1,0 +1,22 @@
+[package]
+name = "rsec"
+version = "0.0.9999"
+authors = ["Trung Pham <pham.bao.trung@gmail.com>"]
+
+[dependencies]
+rusqlite = { version = "0.16.0", features = ["bundled"] }
+sodiumoxide = "0.2.0"
+lz4 = "1.23.1"
+structopt = "0.2"
+argonautica = "0.1.5"
+rpassword = "2.1.0"
+reqwest = "0.9.9"
+url = "1.7.2"
+libc = "0.2.48"
+rand = "0.6.4"
+
+[build-dependencies]
+cc = "1.0"
+
+[profile.test] 
+opt-level = 3
