@@ -108,7 +108,7 @@ pub fn block_encrypt(
     t3f_key: &[u8; T3F_KEY_LEN],
     t3f_tweak: &[u8; T3F_TWEAK_LEN],
 ) -> [u8; T3F_BLOCK_LEN] {
-
+    
     let mut t3f_ctx: ThreefishKey = ThreefishKey {
         state_size: 0,
         key: [0; T3F_KEY_LEN + 8],
